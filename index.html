@@ -1,0 +1,860 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#baff39">
+<title>MINDORA — Your Personal Study Space</title>
+<style>
+:root{
+  --lime:#baff39;--lime2:#d5ff85;--bg:#f5f7f0;--panel:#fff;
+  --text:#171a14;--muted:#777d70;--line:#e7eadf;--soft:#eff3e7;
+  --shadow:0 10px 35px #17220b0b;--danger:#e44b55;--radius:20px
+}
+[data-theme="dark"]{
+  --bg:#11130f;--panel:#1b1e18;--text:#f4f7ed;--muted:#a2a797;
+  --line:#30352b;--soft:#252a20;--shadow:0 10px 35px #0003
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;font-size:14px;transition:background .2s,color .2s}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid #88c928;outline-offset:2px}
+.app{min-height:100vh;display:grid;grid-template-columns:245px minmax(0,1fr)}
+.sidebar{position:sticky;top:0;height:100vh;background:var(--panel);border-right:1px solid var(--line);padding:24px 16px;display:flex;flex-direction:column;gap:25px;z-index:5}
+.brand{display:flex;align-items:center;gap:11px;padding:0 10px}
+.brand-icon{width:42px;height:42px;border-radius:14px;background:var(--lime);display:grid;place-items:center;font-size:23px;color:#15190f;font-weight:950}
+.brand-name{font-size:21px;font-weight:900;letter-spacing:-1px}
+.brand-sub{font-size:10px;color:var(--muted);letter-spacing:1.4px;margin-top:2px}
+.nav-label{font-size:10px;color:var(--muted);font-weight:800;letter-spacing:1.4px;padding:0 12px;margin:5px 0 8px}
+.nav{display:grid;gap:5px}
+.nav button{border:0;background:transparent;color:var(--muted);display:flex;align-items:center;gap:12px;text-align:left;padding:12px;border-radius:12px;font-weight:650;transition:.2s}
+.nav button:hover,.nav button.active{background:var(--soft);color:var(--text)}
+.nav button.active{box-shadow:inset 3px 0 var(--lime)}
+.nav .ico{font-size:18px;width:23px;text-align:center}
+.sidebar-bottom{margin-top:auto}
+.local-tag{background:var(--soft);padding:13px;border-radius:14px;color:var(--muted);font-size:11px;line-height:1.7}
+.local-tag strong{color:var(--text)}
+.main{min-width:0}
+.topbar{height:78px;display:flex;align-items:center;justify-content:space-between;padding:0 34px;border-bottom:1px solid var(--line);background:var(--panel)}
+.top-left{display:flex;align-items:center;gap:14px}
+.eyebrow{font-size:10px;letter-spacing:1.5px;color:var(--muted);font-weight:800;text-transform:uppercase}
+.top-title{font-size:18px;font-weight:800;margin-top:3px}
+.top-actions{display:flex;align-items:center;gap:10px}
+.icon-btn{width:40px;height:40px;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:13px;display:grid;place-items:center;font-size:17px}
+.avatar{width:40px;height:40px;border-radius:13px;background:var(--lime);color:#15190f;display:grid;place-items:center;font-weight:900}
+.content{max-width:1500px;margin:auto;padding:30px 34px 55px}
+.page{display:none;animation:appear .25s ease}
+.page.active{display:block}
+@keyframes appear{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.page-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:15px;margin-bottom:24px;flex-wrap:wrap}
+h1{font-size:clamp(26px,3vw,36px);letter-spacing:-1.5px;margin:5px 0 7px}
+h2{font-size:17px;letter-spacing:-.4px;margin:0}
+h3{font-size:14px;margin:0}
+p{line-height:1.6}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:11px 15px;border-radius:12px;font-weight:750;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:transform .15s,opacity .15s}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:var(--lime);color:#171a12;border-color:var(--lime)}
+.btn-quiet{background:var(--soft);border-color:transparent}
+.btn-danger{color:var(--danger)}
+.btn-sm{padding:7px 10px;font-size:12px;border-radius:9px}
+.grid{display:grid;gap:17px}
+.stats{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:20px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:21px;box-shadow:var(--shadow);min-width:0}
+.stat-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.stat-icon{width:37px;height:37px;background:var(--soft);border-radius:12px;display:grid;place-items:center;font-size:17px}
+.stat-value{font-size:30px;font-weight:900;letter-spacing:-1.2px;margin:17px 0 5px;overflow-wrap:anywhere}
+.stat-label{font-size:12px;color:var(--muted)}
+.hero{background:var(--lime);color:#18200e;border-radius:25px;padding:28px 30px;display:grid;grid-template-columns:1.4fr .6fr;gap:20px;align-items:center;margin-bottom:20px;overflow:hidden;position:relative}
+.hero h2{font-size:clamp(23px,3vw,34px);letter-spacing:-1.2px;max-width:460px;line-height:1.15;margin:10px 0}
+.hero p{max-width:450px;color:#354224;font-size:13px}
+.hero .btn{background:#18200e;color:white;border-color:#18200e}
+.hero-art{font-size:100px;text-align:center;filter:drop-shadow(0 15px 12px #4c681c25)}
+.two-col{grid-template-columns:minmax(0,1.25fr) minmax(260px,.75fr)}
+.three-col{grid-template-columns:repeat(3,minmax(0,1fr))}
+.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:17px}
+.section-head p{margin:5px 0 0}
+.list{display:grid;gap:10px}
+.list-item{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--line);min-width:0}
+.list-item:last-child{border-bottom:0;padding-bottom:0}
+.list-main{flex:1;min-width:0}
+.list-title{font-weight:750;overflow-wrap:anywhere}
+.list-desc{font-size:12px;color:var(--muted);margin-top:5px;overflow-wrap:anywhere}
+.subject-dot{width:11px;height:11px;border-radius:4px;background:var(--lime);flex-shrink:0}
+.pill{background:var(--soft);border-radius:100px;padding:6px 9px;font-size:11px;font-weight:750;white-space:nowrap}
+.pill.lime{background:var(--lime);color:#18200e}
+.progress{height:7px;background:var(--soft);border-radius:99px;overflow:hidden}
+.progress span{height:100%;display:block;background:var(--lime);border-radius:99px;transition:width .3s}
+.progress-row{display:flex;justify-content:space-between;gap:10px;font-size:12px;margin:16px 0 8px}
+.empty{border:1px dashed var(--line);border-radius:15px;padding:28px 16px;text-align:center;color:var(--muted)}
+.empty-icon{font-size:27px;margin-bottom:10px}
+.empty p{font-size:12px;margin:6px 0 13px}
+input,textarea,select{width:100%;padding:12px 13px;border-radius:11px;border:1px solid var(--line);background:var(--bg);color:var(--text);min-width:0}
+textarea{resize:vertical;min-height:100px;line-height:1.6}
+label{display:block;font-size:12px;font-weight:750;margin-bottom:7px}
+.field{margin-bottom:15px}
+.field small{display:block;color:var(--muted);margin-top:6px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:17px}
+.toolbar input{flex:1;min-width:160px}
+.subject-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.subject-card{position:relative;overflow:hidden}
+.subject-card:before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--lime)}
+.subject-card h3{font-size:16px;margin:10px 0}
+.subject-card .big-emoji{font-size:25px}
+.note-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.note-card{display:flex;flex-direction:column;gap:12px}
+.note-content{color:var(--muted);font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere;max-height:100px;overflow:hidden}
+.note-foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.flashcard{max-width:650px;margin:20px auto;text-align:center;min-height:250px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:20px;cursor:pointer}
+.flashcard .face-label{font-size:10px;letter-spacing:1.5px;font-weight:900;color:var(--muted)}
+.flashcard .face-text{font-size:clamp(20px,4vw,30px);font-weight:800;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere}
+.flash-controls{display:flex;justify-content:center;gap:9px;flex-wrap:wrap}
+.quiz-option{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);padding:13px;border-radius:12px;margin-top:9px;cursor:pointer}
+.quiz-option:has(input:checked){border-color:#a2d840;background:var(--soft)}
+.quiz-option input{width:auto;margin-top:3px;accent-color:#9ed92e}
+.timer-wrap{text-align:center;padding:24px 0}
+.timer-circle{width:min(270px,65vw);aspect-ratio:1;border-radius:50%;border:9px solid var(--soft);outline:3px solid var(--line);margin:24px auto;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
+.timer-circle:before{content:"";position:absolute;inset:-9px;border:9px solid var(--lime);border-radius:50%;clip-path:polygon(0 0,100% 0,100% 100%,0 100%);pointer-events:none}
+.timer-number{font-size:clamp(44px,8vw,65px);font-weight:900;letter-spacing:-3px;font-variant-numeric:tabular-nums}
+.timer-controls{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.preset-row{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:18px}
+.chart-bars{display:flex;align-items:flex-end;gap:10px;height:145px;margin-top:22px}
+.bar-col{flex:1;min-width:0;text-align:center;height:100%;display:flex;flex-direction:column;justify-content:flex-end;gap:7px}
+.bar{width:100%;min-height:3px;background:var(--lime);border-radius:7px 7px 2px 2px}
+.bar-day{font-size:10px;color:var(--muted)}
+.bar-num{font-size:10px;color:var(--muted)}
+.setting-row{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:17px 0;border-bottom:1px solid var(--line)}
+.setting-row:last-child{border:0}
+.setting-row p{margin:5px 0 0;font-size:12px;color:var(--muted)}
+.toggle{width:47px;height:27px;background:var(--line);border:0;border-radius:99px;padding:3px;flex-shrink:0}
+.toggle span{width:21px;height:21px;border-radius:50%;background:var(--panel);display:block;transition:transform .2s}
+.toggle.on{background:var(--lime)}
+.toggle.on span{transform:translateX(20px);background:#18200e}
+.modal-backdrop{display:none;position:fixed;inset:0;background:#0009;z-index:20;align-items:center;justify-content:center;padding:16px}
+.modal-backdrop.open{display:flex}
+.modal{width:min(560px,100%);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:23px;box-shadow:0 20px 90px #0003}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.modal-body{min-width:0}
+.modal-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:18px}
+.toast{position:fixed;bottom:22px;left:50%;transform:translate(-50%,20px);background:var(--text);color:var(--panel);padding:12px 17px;border-radius:12px;z-index:40;opacity:0;pointer-events:none;transition:.2s;box-shadow:var(--shadow);max-width:90vw}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.mobile-menu{display:none}
+.tagline{font-size:12px;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:20px 0}
+kbd{background:var(--soft);border:1px solid var(--line);padding:3px 6px;border-radius:5px;font-size:11px}
+@media(max-width:1100px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.subject-grid,.note-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.three-col{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){
+ .app{grid-template-columns:1fr}
+ .sidebar{position:fixed;left:-270px;width:250px;transition:left .25s;box-shadow:var(--shadow)}
+ .sidebar.open{left:0}
+ .mobile-menu{display:grid}
+ .topbar{padding:0 17px;height:70px}
+ .content{padding:22px 16px 40px}
+ .hero{grid-template-columns:1fr;padding:24px}
+ .hero-art{display:none}
+ .two-col{grid-template-columns:1fr}
+ .subject-grid,.note-grid,.three-col{grid-template-columns:1fr}
+ .stats{gap:10px}
+ .stats .card{padding:15px}
+ .stat-value{font-size:25px;margin-top:13px}
+ .page-heading{align-items:flex-start}
+ .form-row{grid-template-columns:1fr}
+}
+@media(max-width:380px){.stats{grid-template-columns:1fr}.top-title{font-size:15px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar" id="sidebar">
+  <div class="brand"><div class="brand-icon">M</div><div><div class="brand-name">MINDORA</div><div class="brand-sub">STUDY WITH INTENTION</div></div></div>
+  <div>
+    <div class="nav-label">WORKSPACE</div>
+    <nav class="nav" id="navigation">
+      <button class="active" data-page="dashboard"><span class="ico">⌂</span>Overview</button>
+      <button data-page="subjects"><span class="ico">▦</span>My subjects</button>
+      <button data-page="notes"><span class="ico">▤</span>Study notes</button>
+      <button data-page="flashcards"><span class="ico">▱</span>Flashcards <span class="pill" id="dueBadge" style="margin-left:auto">0</span></button>
+      <button data-page="quiz"><span class="ico">✳</span>Practice quiz</button>
+      <button data-page="focus"><span class="ico">◷</span>Focus room</button>
+      <button data-page="analytics"><span class="ico">↗</span>Study insights</button>
+    </nav>
+  </div>
+  <div>
+    <div class="nav-label">PERSONAL</div>
+    <nav class="nav">
+      <button data-page="settings"><span class="ico">⚙</span>Settings & backup</button>
+    </nav>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="local-tag"><strong>● Private by design</strong><br>Your study data stays in this browser. No account or cloud sync required.</div>
+    <div class="brand" style="padding:15px 7px 0"><div class="avatar" id="sideAvatar">S</div><div style="min-width:0"><div class="list-title" id="sideName">Student</div><div class="list-desc">Your learning space</div></div></div>
+  </div>
+</aside>
+
+<main class="main">
+<header class="topbar">
+  <div class="top-left">
+    <button class="icon-btn mobile-menu" id="menuBtn" aria-label="Open menu">☰</button>
+    <div><div class="eyebrow">YOUR PERSONAL STUDY SPACE</div><div class="top-title" id="topTitle">Overview</div></div>
+  </div>
+  <div class="top-actions">
+    <button class="icon-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme">☾</button>
+    <button class="btn btn-primary" id="quickAdd">＋ Add new</button>
+    <div class="avatar" id="topAvatar">S</div>
+  </div>
+</header>
+
+<div class="content">
+<section class="page active" id="page-dashboard">
+  <div class="hero">
+    <div>
+      <div class="eyebrow" style="color:#354224">A LITTLE PROGRESS, EVERY DAY</div>
+      <h2 id="greeting">Make today count.</h2>
+      <p>Build your understanding one session at a time. Your next breakthrough starts with the next small step.</p>
+      <button class="btn" data-go="focus">Start a focus session ↗</button>
+    </div>
+    <div class="hero-art">✳</div>
+  </div>
+  <div class="grid stats">
+    <div class="card"><div class="stat-top"><span class="stat-label">FOCUS TIME</span><span class="stat-icon">◷</span></div><div class="stat-value" id="statMinutes">0m</div><div class="stat-label">Total completed focus time</div></div>
+    <div class="card"><div class="stat-top"><span class="stat-label">FLASHCARDS</span><span class="stat-icon">▱</span></div><div class="stat-value" id="statCards">0</div><div class="stat-label" id="statCardsSub">Cards in your library</div></div>
+    <div class="card"><div class="stat-top"><span class="stat-label">STUDY NOTES</span><span class="stat-icon">▤</span></div><div class="stat-value" id="statNotes">0</div><div class="stat-label">Ideas saved for later</div></div>
+    <div class="card"><div class="stat-top"><span class="stat-label">QUIZ ACCURACY</span><span class="stat-icon">✳</span></div><div class="stat-value" id="statAccuracy">—</div><div class="stat-label">Across completed quizzes</div></div>
+  </div>
+  <div class="grid two-col">
+    <div class="card">
+      <div class="section-head"><div><h2>Your subjects</h2><p class="muted small">Your learning, organised.</p></div><button class="btn btn-sm" data-go="subjects">View all ↗</button></div>
+      <div class="list" id="dashSubjects"></div>
+    </div>
+    <div class="card">
+      <div class="section-head"><div><h2>Today's focus</h2><p class="muted small">Make a little time count.</p></div><span class="stat-icon">◷</span></div>
+      <div style="display:flex;align-items:baseline;gap:8px;margin:17px 0"><span class="stat-value" id="todayMinutes">0</span><span class="muted">minutes today</span></div>
+      <div class="progress"><span id="todayProgress" style="width:0%"></span></div>
+      <div class="progress-row"><span class="muted">Daily goal</span><strong id="goalLabel">60 min</strong></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:10px" data-go="focus">Enter focus room →</button>
+    </div>
+    <div class="card">
+      <div class="section-head"><div><h2>Continue learning</h2><p class="muted small">Pick up where you left off.</p></div></div>
+      <div id="continueLearning"></div>
+    </div>
+    <div class="card">
+      <div class="section-head"><div><h2>Quick actions</h2><p class="muted small">What would you like to work on?</p></div></div>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">
+        <button class="btn btn-quiet" data-action="new-subject">＋ Subject</button>
+        <button class="btn btn-quiet" data-action="new-note">＋ Note</button>
+        <button class="btn btn-quiet" data-action="new-card">＋ Flashcard</button>
+        <button class="btn btn-quiet" data-go="quiz">✳ Practice quiz</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="page" id="page-subjects">
+  <div class="page-heading"><div><div class="eyebrow">ORGANISE YOUR KNOWLEDGE</div><h1>My subjects</h1><div class="muted">Create a home for every topic you're learning.</div></div><button class="btn btn-primary" data-action="new-subject">＋ New subject</button></div>
+  <div class="toolbar"><input id="subjectSearch" placeholder="Search subjects…"></div>
+  <div class="grid subject-grid" id="subjectGrid"></div>
+</section>
+
+<section class="page" id="page-notes">
+  <div class="page-heading"><div><div class="eyebrow">CAPTURE WHAT MATTERS</div><h1>Study notes</h1><div class="muted">Your own reference library, stored locally.</div></div><button class="btn btn-primary" data-action="new-note">＋ New note</button></div>
+  <div class="toolbar"><input id="noteSearch" placeholder="Search titles and note content…"><select id="noteFilter" style="max-width:210px"><option value="">All subjects</option></select></div>
+  <div class="grid note-grid" id="noteGrid"></div>
+</section>
+
+<section class="page" id="page-flashcards">
+  <div class="page-heading"><div><div class="eyebrow">ACTIVE RECALL</div><h1>Flashcards</h1><div class="muted">Practice retrieving information instead of just rereading it.</div></div><button class="btn btn-primary" data-action="new-card">＋ New flashcard</button></div>
+  <div class="grid stats">
+    <div class="card"><div class="stat-label">TOTAL CARDS</div><div class="stat-value" id="fcTotal">0</div></div>
+    <div class="card"><div class="stat-label">DUE TO REVIEW</div><div class="stat-value" id="fcDue">0</div></div>
+    <div class="card"><div class="stat-label">MASTERED</div><div class="stat-value" id="fcMastered">0</div></div>
+    <div class="card"><div class="stat-label">REVIEWS COMPLETED</div><div class="stat-value" id="fcReviews">0</div></div>
+  </div>
+  <div class="card" style="margin-bottom:18px">
+    <div class="toolbar" style="margin:0"><select id="flashFilter" style="max-width:260px"><option value="">All subjects</option></select><button class="btn btn-primary" id="startReview">Start review session</button><button class="btn" id="stopReview" style="display:none">End session</button></div>
+  </div>
+  <div id="flashStudy" style="display:none">
+    <div class="muted small" style="text-align:center" id="flashProgress">Card 1 of 1</div>
+    <div class="card flashcard" id="flashFlip" role="button" tabindex="0" aria-label="Flip flashcard">
+      <div class="face-label" id="flashFaceLabel">QUESTION · TAP TO REVEAL</div><div class="face-text" id="flashFaceText">Your question appears here.</div><div class="muted small">Click or press Enter to flip</div>
+    </div>
+    <div class="flash-controls" id="flashRatings" style="display:none">
+      <button class="btn btn-danger" data-rating="again">↻ Again</button><button class="btn" data-rating="hard">Hard</button><button class="btn" data-rating="good">✓ Got it</button><button class="btn btn-primary" data-rating="easy">Easy →</button>
+    </div>
+  </div>
+  <div class="card"><div class="section-head"><div><h2>Your flashcard library</h2><p class="muted small">Review or edit any card.</p></div></div><div class="list" id="flashLibrary"></div></div>
+</section>
+
+<section class="page" id="page-quiz">
+  <div class="page-heading"><div><div class="eyebrow">TEST YOUR UNDERSTANDING</div><h1>Practice quiz</h1><div class="muted">Create practice questions from your own notes and flashcards.</div></div></div>
+  <div class="grid two-col">
+    <div class="card">
+      <div class="section-head"><div><h2>Build a practice session</h2><p class="muted small">Questions are generated offline from your material.</p></div><span class="stat-icon">✳</span></div>
+      <div class="field"><label for="quizSubject">Subject</label><select id="quizSubject"><option value="">All subjects</option></select></div>
+      <div class="field"><label for="quizCount">Number of questions</label><select id="quizCount"><option value="5">5 questions</option><option value="10">10 questions</option><option value="15">15 questions</option></select></div>
+      <div class="field"><label for="quizSource">Practice material</label><select id="quizSource"><option value="all">Notes and flashcards</option><option value="cards">Flashcards only</option><option value="notes">Notes only</option></select></div>
+      <button class="btn btn-primary" id="beginQuiz" style="width:100%">Generate practice quiz →</button>
+      <p class="muted small">Questions are based on your saved content. Review each answer carefully; automatically generated questions may need correction.</p>
+    </div>
+    <div class="card"><div class="section-head"><div><h2>Quiz history</h2><p class="muted small">Your previous practice sessions.</p></div></div><div class="list" id="quizHistory"></div></div>
+  </div>
+  <div class="card" id="quizArea" style="display:none;margin-top:18px">
+    <div class="section-head"><div><span class="eyebrow" id="quizCounter">QUESTION 1</span><h2 id="quizQuestion" style="margin-top:8px">Question</h2></div><span class="pill lime" id="quizScore">0 correct</span></div>
+    <div id="quizOptions"></div>
+    <div id="quizFeedback" class="small" style="margin-top:14px"></div>
+    <div class="modal-actions"><button class="btn btn-primary" id="quizNext" disabled>Next question →</button></div>
+  </div>
+  <div class="card" id="quizResult" style="display:none;margin-top:18px;text-align:center">
+    <div class="eyebrow">SESSION COMPLETE</div><div class="stat-value" id="quizFinalScore">0%</div><h2 id="quizResultTitle">Good work.</h2><p class="muted" id="quizResultText"></p><button class="btn btn-primary" id="quizAgain">Try another quiz</button>
+  </div>
+</section>
+
+<section class="page" id="page-focus">
+  <div class="page-heading"><div><div class="eyebrow">SINGLE-TASK MODE</div><h1>Focus room</h1><div class="muted">One task. One session. Less distraction.</div></div></div>
+  <div class="grid two-col">
+    <div class="card">
+      <div class="timer-wrap">
+        <div class="eyebrow" id="timerStatus">READY WHEN YOU ARE</div>
+        <div class="timer-circle"><div class="timer-number" id="timerDisplay">25:00</div><div class="muted small" id="timerMode">FOCUS SESSION</div></div>
+        <div class="timer-controls"><button class="btn btn-primary" id="timerStart">▶ Start focus</button><button class="btn" id="timerReset">↻ Reset</button></div>
+        <div class="preset-row"><button class="btn btn-sm" data-preset="15">15 min</button><button class="btn btn-sm" data-preset="25">25 min</button><button class="btn btn-sm" data-preset="45">45 min</button><button class="btn btn-sm" data-preset="60">60 min</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-head"><div><h2>Session details</h2><p class="muted small">Choose what you'll work on.</p></div></div>
+      <div class="field"><label for="focusSubject">Study subject</label><select id="focusSubject"><option value="">General study</option></select></div>
+      <div class="field"><label for="focusTask">Today's intention</label><textarea id="focusTask" placeholder="e.g. Understand amortised cost and solve five questions…" rows="4"></textarea></div>
+      <div class="progress-row"><span class="muted">Today's completed focus</span><strong id="focusTodayLabel">0 min</strong></div><div class="progress"><span id="focusTodayBar" style="width:0%"></span></div>
+      <hr><div class="muted small">Tip: define one small outcome before you start. Keep other tasks out of reach until the session ends.</div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:18px"><div class="section-head"><div><h2>Recent focus sessions</h2><p class="muted small">A record of your completed sessions.</p></div></div><div class="list" id="focusHistory"></div></div>
+</section>
+
+<section class="page" id="page-analytics">
+  <div class="page-heading"><div><div class="eyebrow">NOTICE YOUR PROGRESS</div><h1>Study insights</h1><div class="muted">Understand your habits and build a consistent routine.</div></div></div>
+  <div class="grid stats">
+    <div class="card"><div class="stat-label">TOTAL FOCUS TIME</div><div class="stat-value" id="anaTotal">0h</div></div>
+    <div class="card"><div class="stat-label">SESSIONS COMPLETED</div><div class="stat-value" id="anaSessions">0</div></div>
+    <div class="card"><div class="stat-label">QUIZZES TAKEN</div><div class="stat-value" id="anaQuizzes">0</div></div>
+    <div class="card"><div class="stat-label">AVERAGE ACCURACY</div><div class="stat-value" id="anaAccuracy">—</div></div>
+  </div>
+  <div class="grid two-col">
+    <div class="card"><div class="section-head"><div><h2>Last 7 days</h2><p class="muted small">Completed focus minutes per day.</p></div></div><div class="chart-bars" id="weekChart"></div></div>
+    <div class="card"><div class="section-head"><div><h2>Learning inventory</h2><p class="muted small">The material you've created so far.</p></div></div><div id="inventory"></div></div>
+  </div>
+  <div class="card" style="margin-top:18px"><div class="section-head"><div><h2>Subject activity</h2><p class="muted small">Study time recorded against each subject.</p></div></div><div class="list" id="subjectActivity"></div></div>
+</section>
+
+<section class="page" id="page-settings">
+  <div class="page-heading"><div><div class="eyebrow">YOUR SPACE, YOUR RULES</div><h1>Settings & backup</h1><div class="muted">Personalise your workspace and manage your data.</div></div></div>
+  <div class="grid two-col">
+    <div class="card">
+      <div class="section-head"><div><h2>Personal profile</h2><p class="muted small">Customise your study space.</p></div></div>
+      <form id="profileForm">
+        <div class="field"><label for="profileName">Your name</label><input id="profileName" maxlength="60" placeholder="What should we call you?"></div>
+        <div class="field"><label for="dailyGoal">Daily focus goal (minutes)</label><input id="dailyGoal" type="number" min="5" max="1440" required></div>
+        <button class="btn btn-primary" type="submit">Save preferences</button>
+      </form>
+      <hr>
+      <div class="setting-row"><div><strong>Appearance</strong><p>Switch between light and dark mode.</p></div><button class="btn" id="settingsTheme">Toggle theme</button></div>
+    </div>
+    <div class="card">
+      <div class="section-head"><div><h2>Backup & restore</h2><p class="muted small">Keep a copy of your study data.</p></div><span class="stat-icon">⇧</span></div>
+      <p class="muted small">Export your subjects, notes, flashcards, focus sessions and quiz history to a JSON file. Import a previous backup to restore it.</p>
+      <button class="btn btn-primary" id="exportBtn" style="width:100%;margin:7px 0">↓ Export JSON backup</button>
+      <button class="btn" id="importBtn" style="width:100%;margin:7px 0">↑ Import JSON backup</button>
+      <input type="file" id="importFile" accept=".json,application/json" hidden>
+      <hr>
+      <div class="setting-row"><div><strong>Local storage</strong><p id="storageStatus">Your data is saved in this browser.</p></div><span class="pill lime">LOCAL</span></div>
+      <div class="setting-row"><div><strong>Delete all data</strong><p>Permanently clear this app's saved data in this browser.</p></div><button class="btn btn-danger btn-sm" id="clearData">Clear data</button></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:18px"><div class="section-head"><div><h2>About MINDORA</h2><p class="muted small">A focused study workspace, built to run locally.</p></div></div><p class="muted small">MINDORA is a browser-based study tool. It does not connect to an AI service, cloud database, school account or external API. Quiz generation uses simple local rules and your saved notes and flashcards. Data is stored in browser storage and may be lost if browser site data is cleared, so export backups regularly. This single-file version does not synchronise data across devices.</p><div class="tagline">MINDORA · Study with intention.</div></div>
+</section>
+</div>
+</main>
+</div>
+
+<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <div class="modal-head"><h2 id="modalTitle">Add item</h2><button class="icon-btn" id="modalClose" aria-label="Close">×</button></div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+const todayKey = (date=new Date()) => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtDate = d => {try{return new Date(d).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"})}catch{return ""}};
+const DEFAULT_SUBJECTS = [
+  {id:"welcome-finance",title:"Finance & Accounting",color:"#baff39",icon:"📈",created:Date.now()},
+  {id:"welcome-science",title:"Science",color:"#9fbcff",icon:"🔬",created:Date.now()},
+  {id:"welcome-languages",title:"Languages",color:"#ffb5c4",icon:"✍️",created:Date.now()}
+];
+
+function freshState(){
+ return {version:1,profile:{name:"",goal:60,theme:"light"},subjects:[],notes:[],cards:[],sessions:[],quizzes:[],created:Date.now()};
+}
+function loadState(){
+ try{
+   const raw=localStorage.getItem("mindora_v1");
+   if(!raw)return freshState();
+   const x=JSON.parse(raw), d=freshState();
+   return {...d,...x,profile:{...d.profile,...(x.profile||{})},
+    subjects:Array.isArray(x.subjects)?x.subjects:[],
+    notes:Array.isArray(x.notes)?x.notes:[],
+    cards:Array.isArray(x.cards)?x.cards:[],
+    sessions:Array.isArray(x.sessions)?x.sessions:[],
+    quizzes:Array.isArray(x.quizzes)?x.quizzes:[]};
+ }catch(e){console.error(e);return freshState()}
+}
+let state=loadState();
+let currentPage="dashboard", quiz=null, reviewQueue=[], reviewIndex=0, reviewFlipped=false;
+let timerSeconds=25*60,timerInitial=25*60,timerRunning=false,timerInterval=null;
+let toastTimer=null;
+
+function save(){
+ try{localStorage.setItem("mindora_v1",JSON.stringify(state));$("#storageStatus") && ($("#storageStatus").textContent="Saved locally in this browser.");}
+ catch(e){notify("Could not save. Browser storage may be full.");console.error(e)}
+}
+function notify(msg){
+ const t=$("#toast");t.textContent=msg;t.classList.add("show");
+ clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),2600);
+}
+function subjectName(id){return state.subjects.find(s=>s.id===id)?.title||"Unassigned"}
+function subjectOptions(selected="",allLabel="Choose a subject"){
+ return `<option value="">${esc(allLabel)}</option>`+state.subjects.map(s=>`<option value="${esc(s.id)}" ${s.id===selected?"selected":""}>${esc(s.title)}</option>`).join("");
+}
+function safePercent(a,b){return b?Math.round(a/b*100):0}
+function totalMinutes(){return state.sessions.reduce((a,s)=>a+(Number(s.minutes)||0),0)}
+function todayMinutes(){return state.sessions.filter(s=>s.date===todayKey()).reduce((a,s)=>a+(Number(s.minutes)||0),0)}
+function totalQuizCorrect(){return state.quizzes.reduce((a,q)=>a+(Number(q.correct)||0),0)}
+function totalQuizQuestions(){return state.quizzes.reduce((a,q)=>a+(Number(q.total)||0),0)}
+function dueCards(){const now=todayKey();return state.cards.filter(c=>!c.nextReview||c.nextReview<=now)}
+function emptyHTML(icon,title,desc,button="",action=""){
+ return `<div class="empty"><div class="empty-icon">${icon}</div><strong>${esc(title)}</strong><p>${esc(desc)}</p>${button?`<button class="btn btn-primary btn-sm" data-action="${esc(action)}">${esc(button)}</button>`:""}</div>`;
+}
+function setTheme(){
+ document.documentElement.dataset.theme=state.profile.theme==="dark"?"dark":"light";
+ $("#themeBtn").textContent=state.profile.theme==="dark"?"☀":"☾";
+}
+function showPage(page){
+ if(!$(`#page-${page}`))return;
+ currentPage=page;
+ $$(".page").forEach(p=>p.classList.toggle("active",p.id===`page-${page}`));
+ $$("#navigation button[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
+ const btn=$(`#navigation button[data-page="${page}"]`);
+ $("#topTitle").textContent=btn?btn.textContent.trim():page;
+ $("#sidebar").classList.remove("open");
+ renderAll();
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function renderAll(){
+ renderProfile();renderDashboard();renderSubjects();renderNotes();renderFlashcards();renderQuizHistory();renderFocus();renderAnalytics();updateSelects();
+}
+function renderProfile(){
+ const name=state.profile.name.trim()||"Student";
+ $("#sideName").textContent=name;$("#sideAvatar").textContent=name[0].toUpperCase();
+ $("#topAvatar").textContent=name[0].toUpperCase();
+ $("#greeting").textContent=`${getGreeting()}, ${name}.`;
+ $("#profileName").value=state.profile.name;
+ $("#dailyGoal").value=state.profile.goal||60;
+ $("#goalLabel").textContent=`${state.profile.goal||60} min`;
+}
+function getGreeting(){const h=new Date().getHours();return h<12?"Good morning":h<18?"Good afternoon":"Good evening"}
+function renderDashboard(){
+ const mins=totalMinutes(), cards=state.cards.length, notes=state.notes.length;
+ $("#statMinutes").textContent=mins>=60?`${Math.floor(mins/60)}h ${mins%60}m`:`${mins}m`;
+ $("#statCards").textContent=cards;$("#statCardsSub").textContent=`${dueCards().length} ready to review`;
+ $("#statNotes").textContent=notes;
+ $("#statAccuracy").textContent=state.quizzes.length?`${safePercent(totalQuizCorrect(),totalQuizQuestions())}%`:"—";
+ $("#todayMinutes").textContent=todayMinutes();
+ $("#todayProgress").style.width=Math.min(100,todayMinutes()/Math.max(1,state.profile.goal||60)*100)+"%";
+ const recent=[...state.subjects].sort((a,b)=>(b.created||0)-(a.created||0)).slice(0,5);
+ $("#dashSubjects").innerHTML=recent.length?recent.map(s=>{
+   const n=state.notes.filter(x=>x.subjectId===s.id).length;
+   const c=state.cards.filter(x=>x.subjectId===s.id).length;
+   return `<div class="list-item"><span class="subject-dot" style="background:${esc(s.color||"var(--lime)")}"></span><div class="list-main"><div class="list-title">${esc(s.icon||"📘")} ${esc(s.title)}</div><div class="list-desc">${n} notes · ${c} flashcards</div></div><button class="btn btn-sm" data-edit-subject="${esc(s.id)}">Open</button></div>`
+ }).join(""):emptyHTML("▦","Start with a subject","Create a subject to organise your learning.","Create subject","new-subject");
+ const lastNote=[...state.notes].sort((a,b)=>(b.updated||b.created||0)-(a.updated||a.created||0))[0];
+ const lastCard=state.cards[0];
+ if(lastNote) $("#continueLearning").innerHTML=`<div class="list-item"><span class="stat-icon">▤</span><div class="list-main"><div class="list-title">${esc(lastNote.title)}</div><div class="list-desc">${esc(subjectName(lastNote.subjectId))} · ${fmtDate(lastNote.updated||lastNote.created)}</div></div><button class="btn btn-sm" data-edit-note="${esc(lastNote.id)}">Open</button></div>`;
+ else if(lastCard) $("#continueLearning").innerHTML=`<div class="list-item"><span class="stat-icon">▱</span><div class="list-main"><div class="list-title">${esc(lastCard.front)}</div><div class="list-desc">Flashcard · ${esc(subjectName(lastCard.subjectId))}</div></div><button class="btn btn-sm" data-go="flashcards">Review</button></div>`;
+ else $("#continueLearning").innerHTML=emptyHTML("✳","Your next step","Add a note or flashcard to get started.","Create note","new-note");
+}
+function renderSubjects(){
+ const q=($("#subjectSearch")?.value||"").toLowerCase().trim();
+ const items=state.subjects.filter(s=>s.title.toLowerCase().includes(q));
+ $("#subjectGrid").innerHTML=items.length?items.map(s=>{
+   const notes=state.notes.filter(n=>n.subjectId===s.id).length;
+   const cards=state.cards.filter(c=>c.subjectId===s.id).length;
+   const sessions=state.sessions.filter(x=>x.subjectId===s.id).reduce((a,x)=>a+(Number(x.minutes)||0),0);
+   return `<div class="card subject-card"><div style="display:flex;justify-content:space-between;align-items:center"><span class="big-emoji">${esc(s.icon||"📘")}</span><button class="btn btn-sm" data-edit-subject="${esc(s.id)}">Edit</button></div><h3>${esc(s.title)}</h3><div class="muted small">Created ${fmtDate(s.created||Date.now())}</div><div class="grid" style="grid-template-columns:repeat(3,1fr);gap:7px;margin-top:18px"><div><div style="font-weight:850">${notes}</div><div class="muted small">Notes</div></div><div><div style="font-weight:850">${cards}</div><div class="muted small">Cards</div></div><div><div style="font-weight:850">${sessions}m</div><div class="muted small">Focus</div></div></div><div class="modal-actions"><button class="btn btn-sm" data-action="new-note" data-subject="${esc(s.id)}">＋ Note</button><button class="btn btn-sm" data-action="new-card" data-subject="${esc(s.id)}">＋ Card</button><button class="btn btn-sm" data-filter-subject="${esc(s.id)}">View notes</button></div></div>`
+ }).join(""):emptyHTML("▦",q?"No matching subjects":"No subjects yet",q?"Try another search.":"Create your first subject to get organised.","＋ New subject","new-subject");
+}
+function renderNotes(){
+ const q=($("#noteSearch")?.value||"").toLowerCase().trim(),filter=$("#noteFilter")?.value||"";
+ const items=[...state.notes].filter(n=>(!filter||n.subjectId===filter)&&`${n.title} ${n.content}`.toLowerCase().includes(q)).sort((a,b)=>(b.updated||b.created||0)-(a.updated||a.created||0));
+ $("#noteGrid").innerHTML=items.length?items.map(n=>`<article class="card note-card"><div class="section-head" style="margin:0"><span class="pill">${esc(subjectName(n.subjectId))}</span><button class="btn btn-sm" data-edit-note="${esc(n.id)}">Edit</button></div><h3>${esc(n.title)}</h3><div class="note-content">${esc(n.content||"No note content yet.")}</div><div class="note-foot"><span class="muted small">${fmtDate(n.updated||n.created)}</span><button class="btn btn-sm btn-danger" data-delete-note="${esc(n.id)}">Delete</button></div></article>`).join(""):emptyHTML("▤",q||filter?"No notes found":"Your notebook is empty","Save your first note to build a personal reference library.","＋ New note","new-note");
+}
+function renderFlashcards(){
+ const due=dueCards().length;
+ $("#dueBadge").textContent=due;
+ $("#fcTotal").textContent=state.cards.length;$("#fcDue").textContent=due;
+ $("#fcMastered").textContent=state.cards.filter(c=>(c.reviews||0)>=5&&(c.interval||0)>=7).length;
+ $("#fcReviews").textContent=state.cards.reduce((a,c)=>a+(Number(c.reviews)||0),0);
+ const filter=$("#flashFilter")?.value||"";
+ const items=state.cards.filter(c=>!filter||c.subjectId===filter);
+ $("#flashLibrary").innerHTML=items.length?items.map(c=>`<div class="list-item"><span class="stat-icon">▱</span><div class="list-main"><div class="list-title">${esc(c.front)}</div><div class="list-desc">${esc(subjectName(c.subjectId))} · ${c.nextReview&&c.nextReview>todayKey()?"Next: "+c.nextReview:"Due now"} · ${(c.reviews||0)} reviews</div></div><button class="btn btn-sm" data-edit-card="${esc(c.id)}">Edit</button><button class="btn btn-sm btn-danger" data-delete-card="${esc(c.id)}">×</button></div>`).join(""):emptyHTML("▱","No flashcards yet","Make question-and-answer cards for active recall.","＋ New flashcard","new-card");
+}
+function updateSelects(){
+ const selected={
+  note:$("#noteFilter")?.value||"",flash:$("#flashFilter")?.value||"",
+  quiz:$("#quizSubject")?.value||"",focus:$("#focusSubject")?.value||""
+ };
+ $("#noteFilter").innerHTML=subjectOptions(selected.note,"All subjects");
+ $("#flashFilter").innerHTML=subjectOptions(selected.flash,"All subjects");
+ $("#quizSubject").innerHTML=subjectOptions(selected.quiz,"All subjects");
+ $("#focusSubject").innerHTML=subjectOptions(selected.focus,"General study");
+}
+function renderQuizHistory(){
+ const items=[...state.quizzes].reverse().slice(0,10);
+ $("#quizHistory").innerHTML=items.length?items.map(q=>`<div class="list-item"><div class="list-main"><div class="list-title">${esc(q.subjectTitle||"Mixed practice")}</div><div class="list-desc">${Number(q.correct)||0} of ${Number(q.total)||0} correct · ${fmtDate(q.date||Date.now())}</div></div><span class="pill ${q.total&&q.correct/q.total>=.7?"lime":""}">${safePercent(q.correct||0,q.total||0)}%</span></div>`).join(""):emptyHTML("✳","No quiz results yet","Complete a practice quiz and your results will appear here.");
+ if(!quiz){$("#quizArea").style.display="none";if(!state.quizzes.length)$("#quizResult").style.display="none"}
+}
+function renderFocus(){
+ $("#focusTodayLabel").textContent=todayMinutes()+" min";
+ $("#focusTodayBar").style.width=Math.min(100,todayMinutes()/Math.max(1,state.profile.goal||60)*100)+"%";
+ const items=[...state.sessions].reverse().slice(0,8);
+ $("#focusHistory").innerHTML=items.length?items.map(s=>`<div class="list-item"><span class="stat-icon">◷</span><div class="list-main"><div class="list-title">${esc(s.task||"Focus session")}</div><div class="list-desc">${esc(subjectName(s.subjectId))} · ${fmtDate(s.date)}</div></div><span class="pill lime">${Number(s.minutes)||0} min</span></div>`).join(""):emptyHTML("◷","Your focus journey starts here","Complete a timer session to see your history.");
+}
+function renderAnalytics(){
+ const mins=totalMinutes();
+ $("#anaTotal").textContent=mins>=60?`${(mins/60).toFixed(1)}h`:`${mins}m`;
+ $("#anaSessions").textContent=state.sessions.length;
+ $("#anaQuizzes").textContent=state.quizzes.length;
+ $("#anaAccuracy").textContent=state.quizzes.length?safePercent(totalQuizCorrect(),totalQuizQuestions())+"%":"—";
+ const days=[];
+ for(let i=6;i>=0;i--){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-i);const key=todayKey(d);days.push({key,label:d.toLocaleDateString(undefined,{weekday:"short"}),minutes:state.sessions.filter(s=>s.date===key).reduce((a,s)=>a+(Number(s.minutes)||0),0)})}
+ const max=Math.max(1,...days.map(d=>d.minutes));
+ $("#weekChart").innerHTML=days.map(d=>`<div class="bar-col"><div class="bar-num">${d.minutes||""}</div><div class="bar" style="height:${Math.max(d.minutes?5:2,d.minutes/max*100)}%"></div><div class="bar-day">${esc(d.label)}</div></div>`).join("");
+ const totalCards=state.cards.length,totalNotes=state.notes.length,totalSubjects=state.subjects.length;
+ $("#inventory").innerHTML=`<div class="progress-row"><span class="muted">Subjects</span><strong>${totalSubjects}</strong></div><div class="progress"><span style="width:${Math.min(100,totalSubjects*10)}%"></span></div><div class="progress-row"><span class="muted">Notes</span><strong>${totalNotes}</strong></div><div class="progress"><span style="width:${Math.min(100,totalNotes*5)}%"></span></div><div class="progress-row"><span class="muted">Flashcards</span><strong>${totalCards}</strong></div><div class="progress"><span style="width:${Math.min(100,totalCards*3)}%"></span></div><div class="progress-row"><span class="muted">Flashcard reviews</span><strong>${state.cards.reduce((a,c)=>a+(c.reviews||0),0)}</strong></div>`;
+ $("#subjectActivity").innerHTML=state.subjects.length?state.subjects.map(s=>{const m=state.sessions.filter(x=>x.subjectId===s.id).reduce((a,x)=>a+(Number(x.minutes)||0),0);return `<div class="list-item"><span class="subject-dot" style="background:${esc(s.color||"var(--lime)")}"></span><div class="list-main"><div class="list-title">${esc(s.title)}</div><div class="progress" style="margin-top:9px"><span style="width:${Math.min(100,m/Math.max(1,mins)*100)}%"></span></div></div><span class="pill">${m} min</span></div>`}).join(""):emptyHTML("▦","No subject activity","Add subjects and study sessions to see a breakdown.");
+}
+
+function showModal(title,html,onOpen){
+ closeModal();
+ $("#modalTitle").textContent=title;
+ $("#modalBody").innerHTML=html;
+ $("#modalBackdrop").classList.add("open");
+ if(onOpen)onOpen();
+ const first=$("#modalBody input, #modalBody textarea, #modalBody select");
+ if(first)setTimeout(()=>first.focus(),40);
+}
+function closeModal(){$("#modalBackdrop").classList.remove("open")}
+function modalSubject(id=""){
+ const s=state.subjects.find(x=>x.id===id);
+ const icons=["📘","📈","🔬","✍️","🧠","🌍","💻","🎨","🧮","🧪","📚","⭐"];
+ showModal(s?"Edit subject":"New subject",`
+ <form id="subjectForm">
+  <div class="field"><label for="subTitle">Subject name</label><input id="subTitle" maxlength="80" required value="${esc(s?.title||"")}" placeholder="e.g. Quantitative Methods"></div>
+  <div class="form-row"><div class="field"><label for="subIcon">Icon</label><select id="subIcon">${icons.map(i=>`<option ${i===(s?.icon||"📘")?"selected":""}>${i}</option>`).join("")}</select></div><div class="field"><label for="subColor">Accent colour</label><select id="subColor">${[["#baff39","Lime"],["#9fbcff","Blue"],["#ffb5c4","Pink"],["#c9a7ff","Violet"],["#ffc88b","Orange"],["#86e8d1","Mint"]].map(([v,l])=>`<option value="${v}" ${v===(s?.color||"#baff39")?"selected":""}>${l}</option>`).join("")}</select></div></div>
+  <div class="modal-actions"><button type="button" class="btn" data-close>Cancel</button>${s?`<button type="button" class="btn btn-danger" data-delete-subject="${esc(s.id)}">Delete</button>`:""}<button class="btn btn-primary" type="submit">Save subject</button></div>
+ </form>`);
+ $("#subjectForm").addEventListener("submit",e=>{
+  e.preventDefault();const title=$("#subTitle").value.trim();if(!title)return;
+  if(s){s.title=title;s.icon=$("#subIcon").value;s.color=$("#subColor").value;s.updated=Date.now()}
+  else state.subjects.push({id:uid(),title,icon:$("#subIcon").value,color:$("#subColor").value,created:Date.now()});
+  save();closeModal();renderAll();notify("Subject saved.");
+ });
+}
+function modalNote(id="",prefSubject=""){
+ const n=state.notes.find(x=>x.id===id);
+ showModal(n?"Edit note":"New study note",`
+ <form id="noteForm">
+  <div class="field"><label for="noteTitle">Title</label><input id="noteTitle" maxlength="150" required value="${esc(n?.title||"")}" placeholder="Give your note a clear title"></div>
+  <div class="field"><label for="noteSubject">Subject</label><select id="noteSubject">${subjectOptions(n?.subjectId||prefSubject,"Unassigned")}</select></div>
+  <div class="field"><label for="noteContent">Your notes</label><textarea id="noteContent" rows="8" maxlength="50000" placeholder="Write explanations, examples, definitions or revision points…">${esc(n?.content||"")}</textarea></div>
+  <div class="modal-actions"><button type="button" class="btn" data-close>Cancel</button>${n?`<button type="button" class="btn btn-danger" data-delete-note="${esc(n.id)}">Delete</button>`:""}<button class="btn btn-primary" type="submit">Save note</button></div>
+ </form>`);
+ $("#noteForm").addEventListener("submit",e=>{
+  e.preventDefault();const title=$("#noteTitle").value.trim();if(!title)return;
+  const data={title,subjectId:$("#noteSubject").value,content:$("#noteContent").value,updated:Date.now()};
+  if(n)Object.assign(n,data);else state.notes.push({id:uid(),...data,created:Date.now()});
+  save();closeModal();renderAll();notify("Note saved.");
+ });
+}
+function modalCard(id="",prefSubject=""){
+ const c=state.cards.find(x=>x.id===id);
+ showModal(c?"Edit flashcard":"New flashcard",`
+ <form id="cardForm">
+  <div class="field"><label for="cardSubject">Subject</label><select id="cardSubject">${subjectOptions(c?.subjectId||prefSubject,"Unassigned")}</select></div>
+  <div class="field"><label for="cardFront">Question / front</label><textarea id="cardFront" rows="3" maxlength="3000" required placeholder="What do you want to remember?">${esc(c?.front||"")}</textarea></div>
+  <div class="field"><label for="cardBack">Answer / back</label><textarea id="cardBack" rows="4" maxlength="10000" required placeholder="Write the answer in your own words…">${esc(c?.back||"")}</textarea></div>
+  <div class="modal-actions"><button type="button" class="btn" data-close>Cancel</button>${c?`<button type="button" class="btn btn-danger" data-delete-card="${esc(c.id)}">Delete</button>`:""}<button class="btn btn-primary" type="submit">Save flashcard</button></div>
+ </form>`);
+ $("#cardForm").addEventListener("submit",e=>{
+  e.preventDefault();const front=$("#cardFront").value.trim(),back=$("#cardBack").value.trim();if(!front||!back)return;
+  const data={front,back,subjectId:$("#cardSubject").value};
+  if(c)Object.assign(c,data,{updated:Date.now()});else state.cards.push({id:uid(),...data,created:Date.now(),reviews:0,interval:0,ease:2.5,nextReview:todayKey()});
+  save();closeModal();renderAll();notify("Flashcard saved.");
+ });
+}
+function deleteItem(type,id){
+ const labels={subject:"subject and its linked notes, cards and sessions",note:"note",card:"flashcard"};
+ if(!confirm(`Delete this ${labels[type]||type}? This cannot be undone.`))return;
+ if(type==="subject"){state.subjects=state.subjects.filter(x=>x.id!==id);state.notes=state.notes.filter(x=>x.subjectId!==id);state.cards=state.cards.filter(x=>x.subjectId!==id);state.sessions=state.sessions.filter(x=>x.subjectId!==id)}
+ if(type==="note")state.notes=state.notes.filter(x=>x.id!==id);
+ if(type==="card")state.cards=state.cards.filter(x=>x.id!==id);
+ save();closeModal();renderAll();notify("Deleted.");
+}
+
+function startReview(){
+ const filter=$("#flashFilter").value;
+ reviewQueue=state.cards.filter(c=>(!filter||c.subjectId===filter)&&(!c.nextReview||c.nextReview<=todayKey()));
+ if(!reviewQueue.length){notify("No cards due for review. Add cards or change the subject filter.");return}
+ reviewQueue.sort(()=>Math.random()-.5);reviewIndex=0;reviewFlipped=false;
+ $("#flashStudy").style.display="block";$("#startReview").style.display="none";$("#stopReview").style.display="inline-flex";
+ showReviewCard();$("#flashStudy").scrollIntoView({behavior:"smooth",block:"center"});
+}
+function showReviewCard(){
+ if(reviewIndex>=reviewQueue.length){endReview(true);return}
+ const c=reviewQueue[reviewIndex];reviewFlipped=false;
+ $("#flashProgress").textContent=`Card ${reviewIndex+1} of ${reviewQueue.length}`;
+ $("#flashFaceLabel").textContent="QUESTION · TAP TO REVEAL";
+ $("#flashFaceText").textContent=c.front;
+ $("#flashRatings").style.display="none";
+}
+function flipReview(){
+ if($("#flashStudy").style.display==="none"||reviewIndex>=reviewQueue.length)return;
+ const c=reviewQueue[reviewIndex];reviewFlipped=!reviewFlipped;
+ $("#flashFaceLabel").textContent=reviewFlipped?"ANSWER · RATE YOUR RECALL":"QUESTION · TAP TO REVEAL";
+ $("#flashFaceText").textContent=reviewFlipped?c.back:c.front;
+ $("#flashRatings").style.display=reviewFlipped?"flex":"none";
+}
+function rateCard(rating){
+ const c=reviewQueue[reviewIndex];if(!c)return;
+ c.reviews=(c.reviews||0)+1;
+ c.ease=Number(c.ease)||2.5;
+ const old=Number(c.interval)||0;
+ if(rating==="again"){c.interval=0;c.nextReview=todayKey();c.ease=Math.max(1.3,c.ease-.2)}
+ else{
+   if(rating==="hard"){c.ease=Math.max(1.3,c.ease-.15);c.interval=old<1?1:Math.max(1,Math.round(old*1.2))}
+   if(rating==="good")c.interval=old<1?1:old===1?3:Math.round(old*c.ease);
+   if(rating==="easy"){c.ease=Math.min(3.2,c.ease+.15);c.interval=old<1?4:Math.max(4,Math.round(old*c.ease*1.3))}
+   const d=new Date();d.setDate(d.getDate()+c.interval);c.nextReview=todayKey(d);
+ }
+ save();reviewIndex++;showReviewCard();renderFlashcards();
+}
+function endReview(done=false){
+ $("#flashStudy").style.display="none";$("#startReview").style.display="inline-flex";$("#stopReview").style.display="none";
+ reviewQueue=[];reviewIndex=0;renderAll();
+ if(done)notify("Review session complete. Nice work!");
+}
+
+function buildQuestions(){
+ const subjectId=$("#quizSubject").value,source=$("#quizSource").value,count=Number($("#quizCount").value)||5;
+ let pool=[];
+ if(source!=="notes")pool.push(...state.cards.filter(c=>!subjectId||c.subjectId===subjectId).map(c=>({question:c.front,answer:c.back,subjectId:c.subjectId,source:"card"})));
+ if(source!=="cards")state.notes.filter(n=>!subjectId||n.subjectId===subjectId).forEach(n=>{
+  const sentences=n.content.split(/[\n.!?]+/).map(x=>x.trim()).filter(x=>x.length>=24&&x.length<=300);
+  sentences.forEach((sentence,i)=>pool.push({question:`According to your note "${n.title}", complete or explain this point: "${sentence.slice(0,180)}${sentence.length>180?"…":""}"`,answer:sentence,subjectId:n.subjectId,source:"note"}));
+ });
+ if(!pool.length){notify("Add some flashcards or notes with content for quiz generation.");return}
+ pool.sort(()=>Math.random()-.5);
+ quiz={questions:pool.slice(0,count).map((q,i)=>({...q,id:uid()})),index:0,correct:0,answered:false,subjectId};
+ $("#quizResult").style.display="none";$("#quizArea").style.display="block";
+ renderQuizQuestion();$("#quizArea").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function renderQuizQuestion(){
+ if(!quiz)return;
+ if(quiz.index>=quiz.questions.length){finishQuiz();return}
+ const q=quiz.questions[quiz.index];
+ $("#quizCounter").textContent=`QUESTION ${quiz.index+1} OF ${quiz.questions.length}`;
+ $("#quizQuestion").textContent=q.question;
+ $("#quizScore").textContent=`${quiz.correct} correct`;
+ $("#quizFeedback").textContent="";
+ $("#quizNext").disabled=true;quiz.answered=false;
+ let options=[];
+ if(q.source==="card"){
+  const others=state.cards.filter(c=>c.id!==q.id&&c.subjectId===q.subjectId&&c.back!==q.answer);
+  options=[q.answer,...others.sort(()=>Math.random()-.5).slice(0,3).map(x=>x.back)];
+ }else{
+  const others=quiz.questions.filter(x=>x.id!==q.id&&x.answer!==q.answer);
+  options=[q.answer,...others.sort(()=>Math.random()-.5).slice(0,3).map(x=>x.answer)];
+ }
+ options=[...new Set(options)].sort(()=>Math.random()-.5);
+ if(options.length<2){
+  $("#quizOptions").innerHTML=`<div class="muted small">This question uses short-answer practice because there are not enough alternative answers in your material.</div><textarea id="shortAnswer" placeholder="Write your answer before revealing the reference answer…" rows="3"></textarea><button class="btn" style="margin-top:10px" id="revealShort">Reveal reference answer</button><div id="shortReference" class="small" style="margin-top:12px;display:none"></div>`;
+  $("#revealShort").onclick=()=>{
+   $("#shortReference").style.display="block";
+   $("#shortReference").innerHTML=`<strong>Reference answer</strong><p>${esc(q.answer)}</p><p class="muted">Compare your answer with the reference. This short-answer response is not automatically graded.</p>`;
+   quiz.answered=true;$("#quizNext").disabled=false;$("#quizFeedback").textContent="Review the reference answer, then continue.";
+  };
+ }else{
+  $("#quizOptions").innerHTML=options.map((o,i)=>`<label class="quiz-option"><input type="radio" name="quizOption" value="${i}"><span>${esc(o)}</span></label>`).join("");
+  $("#quizOptions").insertAdjacentHTML("beforeend",`<button class="btn btn-primary" id="submitAnswer" style="margin-top:12px">Check answer</button>`);
+  $("#submitAnswer").onclick=()=>{
+   if(quiz.answered)return;
+   const chosen=$("#quizOptions input:checked");if(!chosen){notify("Choose an answer first.");return}
+   quiz.answered=true;const selected=options[Number(chosen.value)],correct=selected===q.answer;
+   if(correct)quiz.correct++;
+   $$("#quizOptions input").forEach(input=>{input.disabled=true;const label=input.closest("label");if(options[Number(input.value)]===q.answer)label.style.borderColor="#9ad433"});
+   $("#quizFeedback").textContent=correct?"Correct — nice work.":`Not quite. Reference answer: ${q.answer}`;
+   $("#quizNext").disabled=false;$("#quizScore").textContent=`${quiz.correct} correct`;
+  };
+ }
+ $("#quizNext").textContent=quiz.index===quiz.questions.length-1?"Finish quiz":"Next question →";
+}
+function finishQuiz(){
+ const q=quiz;if(!q)return;
+ const total=q.questions.length,correct=q.correct,pct=safePercent(correct,total);
+ state.quizzes.push({id:uid(),subjectId:q.subjectId,subjectTitle:q.subjectId?subjectName(q.subjectId):"Mixed practice",correct,total,accuracy:pct,date:todayKey()});
+ save();quiz=null;$("#quizArea").style.display="none";$("#quizResult").style.display="block";
+ $("#quizFinalScore").textContent=pct+"%";$("#quizResultTitle").textContent=pct>=80?"Excellent work!":pct>=50?"Good progress.":"Keep practising.";
+ $("#quizResultText").textContent=`You answered ${correct} of ${total} questions correctly. Review your material and try again to strengthen recall.`;
+ renderAll();
+}
+function resetQuiz(){quiz=null;$("#quizArea").style.display="none";$("#quizResult").style.display="none";renderQuizHistory()}
+
+function updateTimerDisplay(){
+ const m=Math.floor(timerSeconds/60),s=timerSeconds%60;
+ $("#timerDisplay").textContent=String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+}
+function stopTimer(){if(timerInterval){clearInterval(timerInterval);timerInterval=null}timerRunning=false}
+function startTimer(){
+ if(timerRunning){stopTimer();$("#timerStart").textContent="▶ Resume focus";$("#timerStatus").textContent="PAUSED";return}
+ timerRunning=true;$("#timerStart").textContent="Ⅱ Pause";$("#timerStatus").textContent="FOCUS IN PROGRESS";
+ timerInterval=setInterval(()=>{
+  timerSeconds--;updateTimerDisplay();
+  if(timerSeconds<=0){
+   stopTimer();const mins=Math.max(1,Math.round(timerInitial/60));
+   state.sessions.push({id:uid(),minutes:mins,subjectId:$("#focusSubject").value,task:$("#focusTask").value.trim(),date:todayKey(),created:Date.now()});
+   save();timerSeconds=timerInitial;updateTimerDisplay();$("#timerStart").textContent="▶ Start focus";$("#timerStatus").textContent="SESSION COMPLETED";
+   renderAll();notify("Focus session complete! Your progress has been saved.");
+  }
+ },1000);
+}
+function resetTimer(){
+ stopTimer();timerSeconds=timerInitial;updateTimerDisplay();$("#timerStart").textContent="▶ Start focus";$("#timerStatus").textContent="READY WHEN YOU ARE";
+}
+function setPreset(minutes){
+ stopTimer();timerInitial=minutes*60;timerSeconds=timerInitial;updateTimerDisplay();
+ $("#timerMode").textContent=`${minutes}-MINUTE FOCUS`;$("#timerStart").textContent="▶ Start focus";$("#timerStatus").textContent="READY WHEN YOU ARE";
+}
+
+function exportBackup(){
+ const payload={app:"MINDORA",formatVersion:1,exportedAt:new Date().toISOString(),data:state};
+ const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download=`mindora-backup-${todayKey()}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+ notify("Backup exported.");
+}
+function importBackup(file){
+ if(!file)return;
+ const reader=new FileReader();
+ reader.onload=()=>{
+  try{
+   const parsed=JSON.parse(reader.result),incoming=parsed.data||parsed;
+   if(!incoming||!Array.isArray(incoming.subjects)||!Array.isArray(incoming.notes)||!Array.isArray(incoming.cards))throw new Error("This file does not look like a MINDORA backup.");
+   if(!confirm("Import this backup and replace the current study data? Export your current data first if you want to keep it."))return;
+   const defaults=freshState();
+   state={...defaults,...incoming,profile:{...defaults.profile,...(incoming.profile||{})},
+    subjects:incoming.subjects,notes:incoming.notes,cards:incoming.cards,
+    sessions:Array.isArray(incoming.sessions)?incoming.sessions:[],
+    quizzes:Array.isArray(incoming.quizzes)?incoming.quizzes:[]};
+   save();resetQuiz();resetTimer();renderAll();notify("Backup imported successfully.");
+  }catch(e){alert("Could not import backup: "+e.message)}
+  $("#importFile").value="";
+ };
+ reader.readAsText(file);
+}
+function clearAllData(){
+ if(!confirm("Delete ALL MINDORA subjects, notes, flashcards, sessions, quiz results and preferences? Export a backup first if needed."))return;
+ stopTimer();state=freshState();save();resetQuiz();resetTimer();renderAll();notify("All study data cleared.");
+}
+
+function handleAction(action,subjectId=""){
+ if(action==="new-subject")modalSubject();
+ if(action==="new-note"){if(!state.subjects.length){notify("You can create a note without a subject, or add a subject first.");}modalNote("",subjectId)}
+ if(action==="new-card"){if(!state.subjects.length)notify("Tip: add a subject to organise your flashcards.");modalCard("",subjectId)}
+}
+function init(){
+ setTheme();renderAll();updateTimerDisplay();
+ $("#navigation").addEventListener("click",e=>{const b=e.target.closest("[data-page]");if(b)showPage(b.dataset.page)});
+ document.addEventListener("click",e=>{
+  const go=e.target.closest("[data-go]");
+  if(go){showPage(go.dataset.go);return}
+  const action=e.target.closest("[data-action]");
+  if(action){handleAction(action.dataset.action,action.dataset.subject||"");return}
+  const editSub=e.target.closest("[data-edit-subject]");
+  if(editSub){modalSubject(editSub.dataset.editSubject);return}
+  const editNote=e.target.closest("[data-edit-note]");
+  if(editNote){modalNote(editNote.dataset.editNote);return}
+  const editCard=e.target.closest("[data-edit-card]");
+  if(editCard){modalCard(editCard.dataset.editCard);return}
+  const delNote=e.target.closest("[data-delete-note]");
+  if(delNote){deleteItem("note",delNote.dataset.deleteNote);return}
+  const delCard=e.target.closest("[data-delete-card]");
+  if(delCard){deleteItem("card",delCard.dataset.deleteCard);return}
+  const delSub=e.target.closest("[data-delete-subject]");
+  if(delSub){deleteItem("subject",delSub.dataset.deleteSubject);return}
+  const filterSub=e.target.closest("[data-filter-subject]");
+  if(filterSub){showPage("notes");$("#noteFilter").value=filterSub.dataset.filterSubject;renderNotes();return}
+  if(e.target.closest("[data-close]")){closeModal();return}
+  const rating=e.target.closest("[data-rating]");
+  if(rating){rateCard(rating.dataset.rating);return}
+  const preset=e.target.closest("[data-preset]");
+  if(preset){setPreset(Number(preset.dataset.preset));return}
+ });
+ $("#menuBtn").addEventListener("click",()=>$("#sidebar").classList.toggle("open"));
+ $("#themeBtn").addEventListener("click",toggleTheme);
+ $("#settingsTheme").addEventListener("click",toggleTheme);
+ function toggleTheme(){state.profile.theme=state.profile.theme==="dark"?"light":"dark";setTheme();save()}
+ $("#quickAdd").addEventListener("click",()=>{
+  showModal("What would you like to add?",`<div class="grid" style="grid-template-columns:1fr 1fr;gap:10px"><button class="btn btn-quiet" data-action="new-subject">▦ New subject</button><button class="btn btn-quiet" data-action="new-note">▤ New note</button><button class="btn btn-quiet" data-action="new-card">▱ New flashcard</button><button class="btn btn-quiet" data-close>Cancel</button></div>`);
+ });
+ $("#modalClose").addEventListener("click",closeModal);
+ $("#modalBackdrop").addEventListener("click",e=>{if(e.target===$("#modalBackdrop"))closeModal()});
+ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();if(e.key==="Enter"&&e.target===$("#flashFlip"))flipReview()});
+ $("#subjectSearch").addEventListener("input",renderSubjects);
+ $("#noteSearch").addEventListener("input",renderNotes);
+ $("#noteFilter").addEventListener("change",renderNotes);
+ $("#flashFilter").addEventListener("change",renderFlashcards);
+ $("#startReview").addEventListener("click",startReview);
+ $("#stopReview").addEventListener("click",()=>endReview(false));
+ $("#flashFlip").addEventListener("click",flipReview);
+ $("#beginQuiz").addEventListener("click",buildQuestions);
+ $("#quizNext").addEventListener("click",()=>{if(!quiz||!quiz.answered)return;quiz.index++;renderQuizQuestion()});
+ $("#quizAgain").addEventListener("click",resetQuiz);
+ $("#timerStart").addEventListener("click",startTimer);
+ $("#timerReset").addEventListener("click",resetTimer);
+ $("#profileForm").addEventListener("submit",e=>{
+  e.preventDefault();state.profile.name=$("#profileName").value.trim();
+  state.profile.goal=Math.min(1440,Math.max(5,Number($("#dailyGoal").value)||60));
+  save();renderAll();notify("Preferences saved.");
+ });
+ $("#exportBtn").addEventListener("click",exportBackup);
+ $("#importBtn").addEventListener("click",()=>$("#importFile").click());
+ $("#importFile").addEventListener("change",e=>importBackup(e.target.files[0]));
+ $("#clearData").addEventListener("click",clearAllData);
+ if(!state.subjects.length&&!state.notes.length&&!state.cards.length){
+  // Welcome subjects are examples, not mandatory; the learner can remove them.
+  $("#dashSubjects").innerHTML=emptyHTML("✳","Welcome to MINDORA","Create your own subjects, notes and flashcards. Your progress is saved on this device.","Create subject","new-subject");
+ }
+}
+init();
+</script>
+</body>
+</html>
